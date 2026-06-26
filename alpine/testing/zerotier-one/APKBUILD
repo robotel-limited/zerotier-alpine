@@ -1,0 +1,39 @@
+# Maintainer: Robotel Limited <tech@robotel.top>
+pkgname=zerotier-one
+pkgver=1.16.2
+pkgrel=0
+pkgdesc="ZeroTier One - Smart Ethernet Switch for Earth"
+url="https://www.zerotier.com/"
+arch="all"
+license="BSL-1.1"
+depends="libstdc++"
+makedepends="build-base linux-headers openssl-dev"
+source="https://github.com/zerotier/ZeroTierOne/archive/refs/tags/${pkgver}.tar.gz"
+builddir="$srcdir/ZeroTierOne-$pkgver"
+
+prepare() {
+default_prepare
+}
+
+build() {
+cd "$builddir"
+make ZT_SSO_SUPPORTED=0
+}
+
+check() {
+cd "$builddir"
+[ -f zerotier-one ]
+}
+
+package() {
+cd "$builddir"
+make DESTDIR="$pkgdir" install
+install -Dm755 debian/zerotier-one.initd \
+it.d/zerotier-one"
+install -d "$pkgdir/var/lib/zerotier-one"
+install -d "$pkgdir/var/log/zerotier-one"
+}
+
+sha512sums="
+SKIP
+"
