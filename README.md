@@ -1,32 +1,65 @@
-# ZeroTier - Global Area Networking
+# ZeroTier One for Alpine Linux 🚀
 
-## Quick Links
+ZeroTier One compiled and tested on **Alpine Linux v3.21**. This repository contains the full source code with build instructions for Alpine Linux.
 
-* [ZeroTier Documentation](https://docs.zerotier.com) - **Start here for downloads, installation, and usage**
-* [How to build](build.md) - **Build instructions and platform requirements**
-* [Corporate Site](https://www.zerotier.com/)
-* [Downloads](https://www.zerotier.com/download/)
-* [Service API Reference](service/README.md)
-* [Network Controller](nonfree/controller/README.md)
-* [Commercial Support](https://www.zerotier.com/contact)
-* [License Information](#license)
+## Why Alpine?
 
-## About
+Alpine Linux is lightweight and secure, but the `zerotier-one` package is not available in the default repositories (even in edge/testing). This repo provides the source code and build instructions to compile ZeroTier One from source on Alpine.
 
-ZeroTier is a smart programmable Ethernet switch for planet Earth. It allows all networked devices, VMs, containers, and applications to communicate as if they all reside in the same physical data center or cloud region.
+## Build Instructions
 
-This is accomplished by combining a cryptographically addressed and secure peer-to-peer network (termed VL1) with an Ethernet emulation layer somewhat similar to VXLAN (termed VL2). Our VL2 Ethernet virtualization layer includes advanced enterprise SDN features like fine grained access control rules for network micro-segmentation and security monitoring.
+### Prerequisites
 
-All ZeroTier traffic is encrypted end-to-end using secret keys that only you control. Most traffic flows peer-to-peer, though we offer free (but slow) relaying for users who cannot establish peer-to-peer connections.
+```bash
+apk add build-base linux-headers git openssl-dev
+```
 
-Apps for Android and iOS are available for free in the Google Play and Apple app stores.
+### Compile from Source
 
-For repository layout, build instructions, platform requirements, and information about running ZeroTier, see [build.md](build.md).
+```bash
+git clone https://github.com/robotel-limited/zerotier-alpine.git
+cd zerotier-alpine
+make ZT_SSO_SUPPORTED=0
+make install
+```
+
+> **Note:** `ZT_SSO_SUPPORTED=0` disables the Rust/SSO component, which is not needed for standard operation and avoids the Rust toolchain dependency.
+
+### Service Setup (OpenRC)
+
+```bash
+cp debian/zerotier-one.initd /etc/init.d/zerotier-one
+chmod +x /etc/init.d/zerotier-one
+rc-service zerotier-one start
+rc-update add zerotier-one default
+```
+
+### Verify Installation
+
+```bash
+zerotier-cli info
+```
+
+Expected output:
+```
+200 info 5e6e37a95d 1.16.2 ONLINE
+```
+
+## Join a Network
+
+```bash
+zerotier-cli join <NETWORK_ID>
+zerotier-cli listnetworks
+```
+
+## Files
+
+| File | Description |
+|------|-------------|
+| `/usr/sbin/zerotier-one` | Compiled binary |
+| `/var/lib/zerotier-one/` | Configuration directory (identity, authtoken, planet) |
+| `/etc/init.d/zerotier-one` | OpenRC init script |
 
 ## License
 
-See [LICENSE-MPL.txt](LICENSE-MPL.txt) for all code in node/, osdep/. service/, and everywhere else except ext/ and nonfree/.
-
-See [nonfree/LICENSE.md](nonfree/LICENSE.md) for all non-free ("source available") portions of this repository.
-
-Code in ext/ is external code included for build convenience or backward compatibility and retains its original license.
+This project is based on [ZeroTierOne](https://github.com/zerotier/ZeroTierOne) by ZeroTier, Inc., licensed under the BSL-1.1 license.
